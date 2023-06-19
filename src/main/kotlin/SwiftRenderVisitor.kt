@@ -54,11 +54,11 @@ class SwiftRenderVisitor(private val context: SwiftRenderContext): SwiftVisitor(
     }
 
     override fun visitReturn(expression: SwiftReturn) {
-        if (expression.returnType.kind == SwiftPrimitiveKind.VOID)
-            return
-
-        context.put(SwiftKeywords.RETURN)
-        context.putWhitespace()
+        if (expression.returnType.kind != SwiftPrimitiveKind.VOID) {
+            context.put(SwiftKeywords.RETURN)
+            context.putWhitespace()
+        }
+        
         expression.value.accept(this)
     }
 
@@ -169,7 +169,7 @@ class SwiftRenderVisitor(private val context: SwiftRenderContext): SwiftVisitor(
                     // Render getter first
                     context.put(SwiftKeywords.GETTER)
                     renderClosureBlock {
-                        property.getter?.acceptChildren(this)
+                        property.getter?.body?.accept(this)
                     }
 
                     context.newLine()
@@ -177,12 +177,12 @@ class SwiftRenderVisitor(private val context: SwiftRenderContext): SwiftVisitor(
                     // Render setter
                     context.put(SwiftKeywords.SETTER)
                     renderClosureBlock {
-                        property.setter.acceptChildren(this)
+                        property.setter.body?.accept(this)
                     }
 
                 } else {
                     // We don't any setter, render only getter without get block
-                    property.getter?.acceptChildren(this)
+                    property.getter?.body?.accept(this)
                 }
             }
         }

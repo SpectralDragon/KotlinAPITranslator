@@ -133,6 +133,22 @@ class SampleTest {
         assertContainsSwiftFile(swiftFileName, expectedSwiftContent)
     }
 
+    @DisplayName("Test Getter and Setter in Class Field")
+    @Test
+    fun testGetterAndSetter() {
+        // given
+        val kotlinFileName = "gettersetter.kt"
+        val swiftFileName = "gettersetter.swift"
+        val mainSourceFile = Utils.getSourceFile(kotlinFileName)
+        val expectedSwiftContent = Utils.getFileContent(swiftFileName)
+
+        // when
+        Utils.compile(listOf(mainSourceFile), temporaryDirectory)
+
+        // then
+        assertContainsSwiftFile(swiftFileName, expectedSwiftContent)
+    }
+
     // region Helpers
     private fun assertContainsSwiftFile(swiftFile: String, expectedSwiftContent: String) {
         val file = temporaryDirectory.walk().toList().first { it.name == swiftFile }

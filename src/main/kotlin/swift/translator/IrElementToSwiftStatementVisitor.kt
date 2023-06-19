@@ -1,6 +1,9 @@
 package swift.translator
 
+import org.jetbrains.kotlin.backend.common.ir.returnType
 import org.jetbrains.kotlin.ir.IrElement
+import org.jetbrains.kotlin.ir.declarations.IrFunction
+import org.jetbrains.kotlin.ir.declarations.impl.IrFunctionImpl
 import org.jetbrains.kotlin.ir.expressions.IrBlock
 import org.jetbrains.kotlin.ir.expressions.IrBlockBody
 import org.jetbrains.kotlin.ir.expressions.IrCall
@@ -14,7 +17,8 @@ import swift.SwiftWrappedExpressionStatement
 
 class IrElementToSwiftStatementVisitor(): IrToSwiftVisitor<SwiftStatement>() {
     override fun visitReturn(expression: IrReturn, data: SwiftVisitorContext): SwiftStatement {
-        return SwiftReturn(expression.value.accept(IrElementToSwiftExpressionVisitor(), data), SwiftType(expression.type))
+        val returnType = (expression.returnTargetSymbol.owner as? IrFunction)?.returnType ?: expression.type
+        return SwiftReturn(expression.value.accept(IrElementToSwiftExpressionVisitor(), data), SwiftType(returnType))
     }
 
     override fun visitBlockBody(body: IrBlockBody, data: SwiftVisitorContext): SwiftStatement {

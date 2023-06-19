@@ -15,6 +15,7 @@ import org.jetbrains.kotlin.ir.types.isFloat
 import org.jetbrains.kotlin.ir.types.isInt
 import org.jetbrains.kotlin.ir.types.isKClass
 import org.jetbrains.kotlin.ir.types.isLong
+import org.jetbrains.kotlin.ir.types.isNothing
 import org.jetbrains.kotlin.ir.types.isNullable
 import org.jetbrains.kotlin.ir.types.isSequence
 import org.jetbrains.kotlin.ir.types.isShort
@@ -168,6 +169,8 @@ fun IrType.getSwiftTypeKind(): SwiftPrimitiveKind {
     } else if (isKClass()) {
         SwiftPrimitiveKind.CLASS
     } else if (isUnit()) {
+        SwiftPrimitiveKind.VOID
+    } else if (isNothing()) {
         SwiftPrimitiveKind.VOID
     } else {
         SwiftPrimitiveKind.CLASS // TODO: (Vlad) I currently not sure about it, we should discuss..

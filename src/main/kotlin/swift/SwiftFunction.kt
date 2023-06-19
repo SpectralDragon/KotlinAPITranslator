@@ -35,7 +35,6 @@ open class SwiftFunction(
 
     override fun acceptChildren(visitor: SwiftVisitor) {
         body?.accept(visitor)
-        parameters.forEach { visitor.visitFunctionParameter(it) }
     }
 }
 
