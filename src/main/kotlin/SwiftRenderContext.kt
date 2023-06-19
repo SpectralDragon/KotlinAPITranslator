@@ -1,5 +1,7 @@
-
-// TODO: (Vlad) Minimized code?
+/**
+ * This object can render code and supports additional features like indentation and new lines.
+ * It's also the great place to add extra features like minimization for code to keep output file less =)
+ */
 class SwiftRenderContext(
     private var stringBuilder: StringBuilder = StringBuilder(),
     private var indentLevel: Int = 0,
@@ -10,11 +12,6 @@ class SwiftRenderContext(
     fun put(char: Char) {
         putIndentIfNeeded()
         stringBuilder.append(char)
-    }
-
-    fun put(chars: CharArray) {
-        putIndentIfNeeded()
-        stringBuilder.append(chars)
     }
 
     fun put(string: String) {
