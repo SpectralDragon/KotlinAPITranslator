@@ -27,6 +27,7 @@ open class SwiftProperty(
     val isStatic: Boolean,
     val isPublicAPI: Boolean,
     val isConst: Boolean,
+    val isComputedProperty: Boolean,
     val getter: SwiftFunction?,
     val setter: SwiftFunction?
 ): SwiftExpression() {

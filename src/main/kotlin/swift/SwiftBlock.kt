@@ -3,6 +3,9 @@ package swift
 open class SwiftBlock(
     val statements: List<SwiftStatement>
 ): SwiftStatement() {
+    override fun accept(visitor: SwiftVisitor) {
+        visitor.visitBlock(this)
+    }
     override fun acceptChildren(visitor: SwiftVisitor) {
         statements.forEach {
             it.accept(visitor)

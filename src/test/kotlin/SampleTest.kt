@@ -7,7 +7,6 @@ import kotlin.io.path.name
 import kotlin.io.path.readText
 import kotlin.io.path.walk
 import kotlin.test.Test
-import kotlin.test.assertContains
 import kotlin.test.assertEquals
 
 @OptIn(ExperimentalPathApi::class)
@@ -88,26 +87,35 @@ class SampleTest {
         assertContainsSwiftFile(swiftFileName, expectedSwiftContent)
     }
 
-    // TODO: Currently not works
+    @DisplayName("Test multiple packages")
+    @Test()
+    fun testMultiplePackages() {
+        // given
+        val kotlinFileFirst = SourceFile.kotlin("mutliplepackagefile1.kt", """
+            package a.b.c
 
-//    @DisplayName("Test class with companion object")
-//    @Test
-//    fun testClassWithCompanionObject() {
-//        val kotlinFileName = "companionobject.kt"
-//        val swiftFileName = "companionobject.swift"
-//        val mainSourceFile = Utils.getSourceFile(kotlinFileName)
-//        val expectedSwiftContent = Utils.getFileContent(swiftFileName)
-//
-//        Utils.compile(listOf(mainSourceFile), temporaryDirectory)
-//
-//        val generatedFiles = temporaryDirectory.walk().toList()
-//        assertContains(generatedFiles.map { it.name }, swiftFileName)
-//
-//        generatedFiles.forEach { file ->
-//            file.printFileContent()
-//            assertContains(expectedSwiftContent, file.readText(Charsets.UTF_8))
-//        }
-//    }
+            class Foo()
+        """.trimIndent())
+
+        val kotlinFileSecond = SourceFile.kotlin("mutliplepackagefile2.kt", """
+            package b.c.d
+
+            class Bar()
+        """.trimIndent())
+
+        val swiftFileName1 = "mutliplepackagefile1.swift"
+        val expectedSwiftContentFile1 = Utils.getFileContent(swiftFileName1)
+
+        val swiftFileName2 = "mutliplepackagefile2.swift"
+        val expectedSwiftContentFile2 = Utils.getFileContent(swiftFileName2)
+
+        // when
+        Utils.compile(listOf(kotlinFileFirst, kotlinFileSecond), temporaryDirectory)
+
+        // then
+        assertContainsSwiftFile(swiftFileName1, expectedSwiftContentFile1)
+        assertContainsSwiftFile(swiftFileName2, expectedSwiftContentFile2)
+    }
 
     // region Helpers
     private fun assertContainsSwiftFile(swiftFile: String, expectedSwiftContent: String) {

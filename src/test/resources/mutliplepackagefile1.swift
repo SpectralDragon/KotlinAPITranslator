@@ -1,7 +1,5 @@
-public class Mob {
-    private let name: String
-    private let health: Double
-    public init(name: String, health: Double) {
+public class Foo {
+    public init() {
         fatalError("Method not implemented yet.")
     }
     public func equals(other: Any?) -> Bool {

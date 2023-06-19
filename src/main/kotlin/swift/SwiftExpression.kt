@@ -13,7 +13,7 @@ open class SwiftExpression(): SwiftElement {
 open class SwiftFunctionCall(
     val functionDeclaration: SwiftFunction,
     val values: List<SwiftExpression?>,
-    val receiver: SwiftExpression?
+    val extensionReceiver: SwiftExpression?
 ): SwiftExpression() {
 
     override fun accept(visitor: SwiftVisitor) {
@@ -40,5 +40,17 @@ open class SwiftConst(
 ): SwiftExpression() {
     override fun accept(visitor: SwiftVisitor) {
         visitor.visitConst(this)
+    }
+}
+
+open class SwiftConcatinating(
+    val expressions: List<SwiftExpression>
+): SwiftExpression() {
+    override fun accept(visitor: SwiftVisitor) {
+        visitor.visitStringConcatinating(this)
+    }
+
+    override fun acceptChildren(visitor: SwiftVisitor) {
+        expressions.forEach { it.accept(visitor) }
     }
 }

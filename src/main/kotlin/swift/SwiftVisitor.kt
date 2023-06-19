@@ -1,5 +1,8 @@
 package swift
 
+/**
+ * Can visit Swift IR tree.
+ */
 abstract class SwiftVisitor {
 
     open fun visitElement(element: SwiftElement) { }
@@ -14,6 +17,10 @@ abstract class SwiftVisitor {
 
     open fun visitFunction(function: SwiftFunction) {
         visitElement(function)
+    }
+
+    open fun visitStatement(statement: SwiftStatement) {
+        visitElement(statement)
     }
 
     open fun visitFunctionParameter(parameter: SwiftFunctionParameter) {
@@ -36,6 +43,9 @@ abstract class SwiftVisitor {
         visitElement(expression)
     }
 
+    open fun visitStringConcatinating(concatinating: SwiftConcatinating) {
+        visitExpression(concatinating)
+    }
     open fun visitBlock(body: SwiftBlock) {
         visitElement(body)
     }

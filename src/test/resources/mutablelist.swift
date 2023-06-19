@@ -1,7 +1,7 @@
-class Foo {
-    var mutableData: NSMutableArray<String> = NSMutableArray()
-    var data: Array<String> {
-        return mutableData.toArray() as Array<String>
+public class Foo {
+    public let mutableData: NSMutableArray<String>
+    public var data: NSArray<String> {
+        return mutableData.toList()
     }
     public init() {
         fatalError("Method not implemented yet.")

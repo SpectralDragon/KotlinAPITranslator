@@ -1,5 +1,8 @@
 package swift
 
+/**
+ * Swift reserved words.
+ */
 object SwiftKeywords {
     const val RETURN = "return"
     const val FUNC = "func"
@@ -20,6 +23,9 @@ object SwiftKeywords {
     const val CONST = "let"
 
     const val CONSTRUCTOR = "init"
+
+    const val GETTER = "get"
+    const val SETTER = "set"
 
     const val INLINE = "@inline(__always)"
 }

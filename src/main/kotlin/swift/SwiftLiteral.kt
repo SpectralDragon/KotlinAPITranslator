@@ -1,5 +1,7 @@
 package swift
 
+// Collection of Swift Literals.
+
 open class SwiftLiteral(): SwiftExpression() {
 
     override fun accept(visitor: SwiftVisitor) {

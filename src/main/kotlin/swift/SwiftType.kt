@@ -21,8 +21,6 @@ import org.jetbrains.kotlin.ir.types.isUInt
 import org.jetbrains.kotlin.ir.types.isULong
 import org.jetbrains.kotlin.ir.types.isUShort
 import org.jetbrains.kotlin.ir.types.isUnit
-import org.jetbrains.kotlin.ir.types.toKotlinType
-import org.jetbrains.kotlin.js.descriptorUtils.nameIfStandardType
 
 
 enum class SwiftPrimitiveKind(val rawString: String) {
@@ -58,11 +56,12 @@ class SwiftType(
 
     override fun toString(): String {
         val name = when (kind) {
-            SwiftPrimitiveKind.COLLECTION -> {
-                toArray()
-            }
             SwiftPrimitiveKind.CLASS -> {
-                getKotlinName()
+                if (isCollection()) {
+                    toArray()
+                } else {
+                    getKotlinName()
+                }
             }
             else -> {
                 kind.rawString
@@ -81,11 +80,7 @@ class SwiftType(
     fun getNameForFunctionParameter(functionParameter: SwiftFunctionParameter): String {
         return when (kind) {
             SwiftPrimitiveKind.COLLECTION -> {
-                if (isMutableCollection()) {
-                    "inout ${toString()}"
-                } else {
-                    toString()
-                }
+                toArray()
             }
             else -> {
                 toString()
@@ -94,25 +89,35 @@ class SwiftType(
     }
 
 
+    // I've plans to supports Array or Dictionary from Swift stdlib, but it's more tricky to spend a time for now...
     private fun toArray(): String {
-        return if (type is IrSimpleTypeImpl) {
-            getKotlinName()
-        } else {
-            return "Any"
+        val isMutable = isMutableCollection()
+        return when (getKotlinName()) {
+            "MutableList", "List" -> {
+                "NS" + (if (isMutable) "Mutable" else "") + "Array<String>"
+            }
+            "MutableMap", "Map" ->
+                "NS" + (if (isMutable) "Mutable" else "") + "NSDictionary<String, Any>"
+            else -> "Any"
         }
     }
 
     /**
-    Helper method to detect mutable collections
+     * Helper method to detect mutable collections
      */
-    fun isMutableCollection(): Boolean {
-        (type as IrSimpleTypeImpl)
-        return getKotlinName().startsWith("Mutable")
+    fun isCollection(): Boolean {
+        return when (getKotlinName()) {
+            "MutableList", "List", "MutableMap", "Map" -> true
+            else -> false
+        }
     }
 
-    @OptIn(ObsoleteDescriptorBasedAPI::class)
+    fun isMutableCollection(): Boolean {
+        return (getKotlinName().startsWith("Mutable") && isCollection())
+    }
+
     private fun getKotlinName(): String {
-        return (type as? IrSimpleTypeImpl)?.classifier?.descriptor?.name?.toString() ?: kind.rawString
+        return type.classFqName?.shortName()?.toString() ?: kind.rawString
     }
 }
 

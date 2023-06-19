@@ -1,4 +1,4 @@
-class Payload {
+public class Payload {
     public let data: Int
     public init(data: Int) {
         fatalError("Method not implemented yet.")
@@ -13,7 +13,7 @@ class Payload {
         fatalError("Method not implemented yet.")
     }
 }
-class Node {
+public class Node {
     public let data: Payload
     public var next: Node?
     public init(data: Payload, next: Node?) {
@@ -29,12 +29,12 @@ class Node {
         fatalError("Method not implemented yet.")
     }
 }
-class Controller {
+public class Controller {
     public init() {
         fatalError("Method not implemented yet.")
     }
     public func foo() -> Node {
-        return Node(data: bar(data: "5"), next: nil)
+        return Node(data: bar(data: 5), next: nil)
     }
     public func bar(data: Int) -> Payload {
         return Payload(data: data)

@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.descriptors.Modality
 import swift.SwiftBlock
 import swift.SwiftBooleanLiteral
 import swift.SwiftClass
+import swift.SwiftConcatinating
 import swift.SwiftConst
 import swift.SwiftConstructor
 import swift.SwiftDoubleLiteral
@@ -22,12 +23,23 @@ import swift.SwiftStringLiteral
 import swift.SwiftVisitor
 
 /**
- * This visitor render all Swift IR tree to code.
+ * Visitor for rendering all Swift IR tree to code.
+ *
+ * Pros:
+ *  - Flexible enough to handle swift specific statements and expressions.
+ *  - Simple API similar to Kotlin IR.
+ *
+ *  Cons:
+ *  - Extra IR for Swift
+ *  - Maybe difficult to read for the first time.
  */
 class SwiftRenderVisitor(private val context: SwiftRenderContext): SwiftVisitor() {
     override fun visitClass(declaration: SwiftClass) {
         if (declaration.modality != Modality.FINAL)
             return
+
+        if (declaration.irClass.visibility.isPublicAPI)
+            context.put("${SwiftKeywords.PUBLIC} ")
 
         context.put("${SwiftKeywords.CLASS} ${declaration.name} ")
         context.put('{')
@@ -147,10 +159,36 @@ class SwiftRenderVisitor(private val context: SwiftRenderContext): SwiftVisitor(
             context.putWhitespace()
         }
 
-        context.put(if (property.isConst) SwiftKeywords.CONST else SwiftKeywords.VAR)
+        context.put(if (property.isConst && !property.isComputedProperty) SwiftKeywords.CONST else SwiftKeywords.VAR)
         context.putWhitespace()
         context.put(property.name)
         context.put(": ${property.type}")
+
+        if (property.isComputedProperty) {
+            renderClosureBlock {
+                if (property.setter != null) {
+
+                    // Render getter first
+                    context.put(SwiftKeywords.GETTER)
+                    renderClosureBlock {
+                        property.getter?.acceptChildren(this)
+                    }
+
+                    context.newLine()
+
+                    // Render setter
+                    context.put(SwiftKeywords.SETTER)
+                    renderClosureBlock {
+                        property.setter.acceptChildren(this)
+                    }
+
+                } else {
+                    // We don't any setter, render only getter without get block
+                    property.getter?.acceptChildren(this)
+                }
+            }
+        }
+
         context.newLine()
     }
 
@@ -163,7 +201,7 @@ class SwiftRenderVisitor(private val context: SwiftRenderContext): SwiftVisitor(
                 context.put(literal.value.toString())
             }
             is SwiftBooleanLiteral -> {
-                context.put(literal.value.toString())
+                context.put(if (literal.value) "true" else "false")
             }
             is SwiftDoubleLiteral -> {
                 context.put(literal.value.toString())
@@ -189,12 +227,16 @@ class SwiftRenderVisitor(private val context: SwiftRenderContext): SwiftVisitor(
                 context.put(expression.functionDeclaration.owner.name)
             }
             else -> {
-                expression.receiver?.let {
+                expression.extensionReceiver?.let {
                     it.accept(this)
                     context.put('.')
                 }
 
-                context.put(expression.functionDeclaration.name)
+                // Starts day with great hack for getters!
+                context.put(expression.functionDeclaration.getFunctionNameForCall())
+
+                if (expression.functionDeclaration.isSystemFunction())
+                    return
             }
         }
 
@@ -211,11 +253,64 @@ class SwiftRenderVisitor(private val context: SwiftRenderContext): SwiftVisitor(
         context.put(')')
     }
 
+    override fun visitStringConcatinating(concatinating: SwiftConcatinating) {
+        concatinating.expressions.forEachIndexed { index, expression ->
+            if ((expression is SwiftConst) && (expression.value is SwiftStringLiteral)) {
+                expression.value.accept(this)
+            } else {
+                context.put('"')
+                context.put("\\(")
+                expression.accept(this)
+                context.put(")")
+                context.put('"')
+            }
+
+            if (index < concatinating.expressions.count() - 1)
+                context.put(" + ")
+        }
+    }
+
     override fun visitConst(const: SwiftConst) {
         const.value.accept(this)
     }
 
     override fun visitGetValue(value: SwiftGetValue) {
         context.put(value.valueName)
+    }
+
+    // region Helpers
+
+    private fun renderClosureBlock(block: () -> Unit) {
+        context.put(" {")
+        context.pushIndent()
+        context.newLine()
+
+        block()
+        context.newLine()
+        context.popIndent()
+        context.put("}")
+    }
+
+    // endregion
+}
+
+/**
+ * Hack for understand was it a system call
+ */
+fun SwiftFunction.isSystemFunction(): Boolean {
+    return name.startsWith("<") && name.endsWith(">")
+}
+
+/**
+ * My excellent solution to get property name from getter function, otherwise return declared name.
+ */
+fun SwiftFunction.getFunctionNameForCall(): String {
+    if (!isSystemFunction())
+        return name
+
+    return if (name.startsWith("<get")) {
+        name.removePrefix("<get-").dropLast(1)
+    } else {
+        name
     }
 }
