@@ -149,10 +149,8 @@ class SwiftRenderVisitor(private val context: SwiftRenderContext): SwiftVisitor(
     }
 
     override fun visitProperty(property: SwiftProperty) {
-        if (property.isPublicAPI) {
-            context.put(SwiftKeywords.PUBLIC)
-            context.putWhitespace()
-        }
+        context.put(if (property.isPublicAPI) SwiftKeywords.PUBLIC else SwiftKeywords.PRIVATE)
+        context.putWhitespace()
 
         if (property.isStatic) {
             context.put(SwiftKeywords.STATIC)

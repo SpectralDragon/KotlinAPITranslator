@@ -1,12 +1,15 @@
 package swift
 
+import org.jetbrains.kotlin.builtins.KotlinBuiltIns
 import org.jetbrains.kotlin.ir.ObsoleteDescriptorBasedAPI
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.types.classFqName
 import org.jetbrains.kotlin.ir.types.impl.IrSimpleTypeImpl
+import org.jetbrains.kotlin.ir.types.impl.originalKotlinType
 import org.jetbrains.kotlin.ir.types.isAny
 import org.jetbrains.kotlin.ir.types.isBoolean
 import org.jetbrains.kotlin.ir.types.isByte
+import org.jetbrains.kotlin.ir.types.isChar
 import org.jetbrains.kotlin.ir.types.isDouble
 import org.jetbrains.kotlin.ir.types.isFloat
 import org.jetbrains.kotlin.ir.types.isInt
@@ -21,6 +24,8 @@ import org.jetbrains.kotlin.ir.types.isUInt
 import org.jetbrains.kotlin.ir.types.isULong
 import org.jetbrains.kotlin.ir.types.isUShort
 import org.jetbrains.kotlin.ir.types.isUnit
+import org.jetbrains.kotlin.ir.types.toKotlinType
+import org.jetbrains.kotlin.resolve.descriptorUtil.classId
 
 
 enum class SwiftPrimitiveKind(val rawString: String) {
@@ -92,24 +97,31 @@ class SwiftType(
     // I've plans to supports Array or Dictionary from Swift stdlib, but it's more tricky to spend a time for now...
     private fun toArray(): String {
         val isMutable = isMutableCollection()
-        return when (getKotlinName()) {
+        val collectionType = when (getKotlinName()) {
             "MutableList", "List" -> {
-                "NS" + (if (isMutable) "Mutable" else "") + "Array<String>"
+                "Array<String>"
+            }
+            "MutableSet", "Set" -> {
+                "Set<String>"
             }
             "MutableMap", "Map" ->
-                "NS" + (if (isMutable) "Mutable" else "") + "NSDictionary<String, Any>"
-            else -> "Any"
+                "Dictionary<String, Any>"
+            else -> return "Any"
         }
+
+        return "NS" + (if (isMutable) "Mutable" else "") + collectionType
     }
 
     /**
      * Helper method to detect mutable collections
      */
     fun isCollection(): Boolean {
-        return when (getKotlinName()) {
-            "MutableList", "List", "MutableMap", "Map" -> true
-            else -> false
-        }
+        val parent = type.classFqName?.parent()
+
+        if (parent?.isRoot == true)
+            return false
+
+        return parent?.shortName().toString() == "collections"
     }
 
     fun isMutableCollection(): Boolean {
@@ -141,6 +153,8 @@ fun IrType.getSwiftTypeKind(): SwiftPrimitiveKind {
         SwiftPrimitiveKind.INT64
     } else if (isInt()) {
         SwiftPrimitiveKind.INT32
+    } else if (isChar()) {
+        SwiftPrimitiveKind.INT16
     } else if (isShort()) {
         SwiftPrimitiveKind.INT16
     } else if (isByte()) {

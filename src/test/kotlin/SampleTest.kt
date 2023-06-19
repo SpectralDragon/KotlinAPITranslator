@@ -117,6 +117,22 @@ class SampleTest {
         assertContainsSwiftFile(swiftFileName2, expectedSwiftContentFile2)
     }
 
+    @DisplayName("Test different types")
+    @Test
+    fun testDifferentTypes() {
+        // given
+        val kotlinFileName = "differenttypes.kt"
+        val swiftFileName = "differenttypes.swift"
+        val mainSourceFile = Utils.getSourceFile(kotlinFileName)
+        val expectedSwiftContent = Utils.getFileContent(swiftFileName)
+
+        // when
+        Utils.compile(listOf(mainSourceFile), temporaryDirectory)
+
+        // then
+        assertContainsSwiftFile(swiftFileName, expectedSwiftContent)
+    }
+
     // region Helpers
     private fun assertContainsSwiftFile(swiftFile: String, expectedSwiftContent: String) {
         val file = temporaryDirectory.walk().toList().first { it.name == swiftFile }
