@@ -27,6 +27,11 @@ import java.nio.file.Path
 import kotlin.io.path.name
 import kotlin.io.path.readBytes
 
+// FIXME: Concatenation for strings
+// FIXME: mutablelist test doesn't work
+// FIXME: Think about last new line char
+// FIXME: "The final task is to remove the single package restriction" not done yet.
+
 internal class KotlinApiTranslatorVisitor(
     private val outputDirectory: Path,
 ) : IrElementVisitorVoid {
@@ -40,6 +45,9 @@ internal class KotlinApiTranslatorVisitor(
             val element = irFile.accept(IrToSwiftFileVisitor(), visitorContext)
             val visitor = SwiftRenderVisitor(context)
             element.acceptChildren(visitor)
+
+            // Hack to delete last new line character
+            context.removeLastCharacter()
 
             val content = context.toString()
             val fileName = irFile.name.substringBefore('.')
@@ -80,7 +88,7 @@ class IrDeclarationToSwiftVisitor(): IrToSwiftVisitor<SwiftExpression>() {
         declaration: IrConstructor,
         data: SwiftVisitorContext
     ): SwiftExpression {
-        return declaration.accept(IrElementToSwiftExpressionVisitor(), data.copy(currentFunction = declaration))
+        return declaration.accept(IrFunctionToSwiftVisitor(), data.copy(currentFunction = declaration))
     }
 
     override fun visitField(declaration: IrField, data: SwiftVisitorContext): SwiftExpression {
@@ -162,13 +170,14 @@ class IrElementToSwiftExpressionVisitor(): IrToSwiftVisitor<SwiftExpression>() {
                 it.accept(IrFunctionToSwiftVisitor(), data)
             }
 
+            // FIXME: Should understand where val or var
+
             SwiftProperty(
                 name = declaration.name.toString(),
                 type = SwiftType(field.type),
                 isStatic = field.isStatic,
                 isPublicAPI = declaration.visibility.isPublicAPI,
-                isVar = declaration.isVar,
-                isConst = declaration.isConst,
+                isConst = declaration.setter == null,
                 getter = getter,
                 setter = setter
             )
@@ -183,7 +192,13 @@ class IrFunctionToSwiftVisitor(): IrToSwiftVisitor<SwiftFunction>() {
         }
 
         val block = declaration.body?.accept(IrElementToSwiftStatementVisitor(), data) as? SwiftBlock
-        return SwiftFunction(declaration.name.toString(), parameters, block, SwiftType(declaration.returnType))
+        return SwiftFunction(
+            name = declaration.name.toString(),
+            isPublicAPI = declaration.visibility.isPublicAPI,
+            parameters = parameters,
+            body = block,
+            returnType = SwiftType(declaration.returnType)
+        )
     }
 
     override fun visitConstructor(declaration: IrConstructor, data: SwiftVisitorContext): SwiftFunction {
@@ -191,7 +206,8 @@ class IrFunctionToSwiftVisitor(): IrToSwiftVisitor<SwiftFunction>() {
             SwiftFunctionParameter(it.name.toString(), SwiftType(it.type), null)
         }
 
-        val block = declaration.body?.accept(IrElementToSwiftStatementVisitor(), data) as? SwiftBlock
+        // TODO: (Vlad) It's ok when we render fatal error
+//        val block = declaration.body?.accept(IrElementToSwiftStatementVisitor(), data) as? SwiftBlock
 
         // TODO: Smells like hack...
         val swiftClass = if (data.currentClass?.irClass == declaration.symbol.owner.parentAsClass) {
@@ -200,7 +216,13 @@ class IrFunctionToSwiftVisitor(): IrToSwiftVisitor<SwiftFunction>() {
             declaration.symbol.owner.parentAsClass.accept(IrDeclarationToSwiftVisitor(), data) as? SwiftClass
         }
 
-        return SwiftConstructor(parameters, block, SwiftType(declaration.returnType), requireNotNull(swiftClass))
+        return SwiftConstructor(
+            isPublicAPI = declaration.visibility.isPublicAPI,
+            parameters = parameters,
+            body = null,
+            returnType = SwiftType(declaration.returnType),
+            owner = requireNotNull(swiftClass)
+        )
     }
 }
 

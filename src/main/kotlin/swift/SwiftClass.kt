@@ -26,7 +26,6 @@ open class SwiftProperty(
     val type: SwiftType,
     val isStatic: Boolean,
     val isPublicAPI: Boolean,
-    val isVar: Boolean,
     val isConst: Boolean,
     val getter: SwiftFunction?,
     val setter: SwiftFunction?

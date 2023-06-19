@@ -118,7 +118,6 @@ class SwiftRenderVisitor(private val context: SwiftRenderContext): SwiftVisitor(
 
         context.put('}')
         context.newLine()
-        context.newLine()
     }
 
     override fun visitElement(element: SwiftElement) {

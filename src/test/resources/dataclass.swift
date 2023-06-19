@@ -1,54 +1,51 @@
 class Payload {
+    public let data: Int
     public init(data: Int) {
-        fatalError("")
+        fatalError("Method not implemented yet.")
     }
-    let data: Int
-    func equals(other: Any?) -> Bool {
-        fatalError("")
+    public func equals(other: Any?) -> Bool {
+        fatalError("Method not implemented yet.")
     }
-    func hashCode() -> Int32 {
-        fatalError("")
+    public func hashCode() -> Int32 {
+        fatalError("Method not implemented yet.")
     }
-    func toString() -> String {
-        fatalError("")
+    public func toString() -> String {
+        fatalError("Method not implemented yet.")
     }
 }
-
 class Node {
-    public init(data: Payload, next: Node?) {
-        fatalError("")
-    }
     public let data: Payload
     public var next: Node?
-        let data: Int
-        func equals(other: Any?) -> Bool {
-            fatalError("")
-        }
-        func hashCode() -> Int32 {
-            fatalError("")
-        }
-        func toString() -> String {
-            fatalError("")
-        }
+    public init(data: Payload, next: Node?) {
+        fatalError("Method not implemented yet.")
+    }
+    public func equals(other: Any?) -> Bool {
+        fatalError("Method not implemented yet.")
+    }
+    public func hashCode() -> Int32 {
+        fatalError("Method not implemented yet.")
+    }
+    public func toString() -> String {
+        fatalError("Method not implemented yet.")
+    }
 }
-
 class Controller {
     public init() {
-        fatalError("")
+        fatalError("Method not implemented yet.")
     }
-    func foo() -> Node {
-        return Node(payload: bar(5), next: nil)
+    public func foo() -> Node {
+        return Node(data: bar(data: "5"), next: nil)
     }
-    func bar(data: Int) -> Payload {
+    public func bar(data: Int) -> Payload {
         return Payload(data: data)
     }
-    func equals(other: Any?) -> Bool {
-        fatalError("")
+    public func equals(other: Any?) -> Bool {
+        fatalError("Method not implemented yet.")
     }
-    func hashCode() -> Int32 {
-        fatalError("")
+    public func hashCode() -> Int32 {
+        fatalError("Method not implemented yet.")
     }
-    func toString() -> String {
-        fatalError("")
+    public func toString() -> String {
+        fatalError("Method not implemented yet.")
     }
 }

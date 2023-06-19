@@ -8,7 +8,6 @@ class SwiftRenderContext(
     private val indentGranularity: Int = 4,
     private var isNewLine: Boolean = false
 ) {
-
     fun put(char: Char) {
         putIndentIfNeeded()
         stringBuilder.append(char)
@@ -38,6 +37,11 @@ class SwiftRenderContext(
 
     override fun toString(): String {
         return stringBuilder.toString()
+    }
+
+    fun removeLastCharacter() {
+        val count = stringBuilder.count()
+        stringBuilder.deleteCharAt(count - 1)
     }
 
     // TODO: (Vlad) Cache for indent level

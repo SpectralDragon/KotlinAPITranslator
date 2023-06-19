@@ -43,5 +43,6 @@ open class SwiftConstructor(
     parameters: List<SwiftFunctionParameter>,
     body: SwiftBlock?,
     returnType: SwiftType,
+    isPublicAPI: Boolean,
     val owner: SwiftClass
-): SwiftFunction(SwiftKeywords.CONSTRUCTOR, parameters, body, returnType)
+): SwiftFunction(SwiftKeywords.CONSTRUCTOR, parameters, body, returnType, isPublicAPI = isPublicAPI)

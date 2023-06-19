@@ -1,9 +1,7 @@
-class Foo {
-    var mutableData: NSMutableArray<String> = NSMutableArray()
-    var data: Array<String> {
-        return mutableData.toArray() as Array<String>
-    }
-    public init() {
+class Mob {
+    private let name: String
+    private let health: Double
+    public init(name: String, health: Double) {
         fatalError("Method not implemented yet.")
     }
     public func equals(other: Any?) -> Bool {
